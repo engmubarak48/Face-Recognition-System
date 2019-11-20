@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jul  9 14:24:19 2019
+
+@author: mubarak
+"""
+from flask import Flask, request
+from app import *
+
+import faiss
+
+app = Flask(__name__)
+
+@app.route('/Faiss_management', methods=['GET', 'POST'])
+
+def faiss():
+    content = request.get_json()
+    directory = content['dirToIndex']
+    functions = SolrInsert(directory)
+    pathImages = content['pathImages']
+    embedding = content['embedding_to_add']
+    Id = content['ID']
+    searchemb = content['searchEmb']
+    DeleteEm = content['IDToRemove']
+    if pathImages != "" and embedding == "" and searchemb == "" and DeleteEm == "":
+        functions.insertAlldB(pathImages)
+        functions.AddDatafaissAll(directory)
+        text = "All Images has been added to the database and faiss"
+    if pathImages == "" and embedding != "" and searchemb == "" and DeleteEm == "":
+        functions.AddDatafaissOne(embedding, Id, directory)
+        text = "Face Added"
+    if pathImages == "" and embedding == "" and searchemb != "" and DeleteEm == "":
+        embedding_id = functions.search(searchemb)
+        text = embedding_id
+    if pathImages == "" and embedding == "" and searchemb == "" and DeleteEm != "":
+        functions.Delete(directory, DeleteEm)
+        text = 'image deleted'
+    return text
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5002,debug=True)
